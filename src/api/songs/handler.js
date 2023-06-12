@@ -12,7 +12,6 @@ class SongsHandler {
     this._validator.validateSongPayload(request.payload);
 
     const songId = await this._service.addSong(request.payload);
-
     const response = h.response({
       status: 'success',
       message: 'Song added successfully',
@@ -20,6 +19,15 @@ class SongsHandler {
     }).code(201);
 
     return response;
+  }
+
+  async getSongsHandler() {
+    const songs = await this._service.getSongs();
+
+    return {
+      status: 'success',
+      data: { songs },
+    };
   }
 }
 

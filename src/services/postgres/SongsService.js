@@ -26,10 +26,27 @@ class SongsService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
+  async getSongs({ title, performer }) {
+    let queryText = 'SELECT id, title, performer FROM songs';
+    const queryParams = [];
+
+    // Construct the query based on the provided search criteria
+    if (title && performer) {
+      queryText += ' WHERE title ILIKE $1 AND performer ILIKE $2';
+      queryParams.push(`%${title}%`, `%${performer}%`);
+    } else if (title) {
+      queryText += ' WHERE title ILIKE $1';
+      queryParams.push(`%${title}%`);
+    } else if (performer) {
+      queryText += ' WHERE performer ILIKE $1';
+      queryParams.push(`%${performer}%`);
+    }
+
     const query = {
-      text: 'SELECT id, title, performer FROM songs',
+      text: queryText,
+      values: queryParams,
     };
+
     const result = await this._pool.query(query);
 
     return result.rows.map(mapSongsDBToModel);

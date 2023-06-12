@@ -51,6 +51,16 @@ class SongsHandler {
       message: 'Song updated successfully',
     };
   }
+
+  async deleteSongByIdHandler(request) {
+    const { id } = request.params;
+    await this._service.deleteSongById(id);
+
+    return {
+      status: 'success',
+      message: 'Song deleted successfully',
+    };
+  }
 }
 
 module.exports = SongsHandler;

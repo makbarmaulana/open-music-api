@@ -30,6 +30,18 @@ class AlbumsHandler {
       data: { album },
     };
   }
+
+  async editAlbumByIdHandler(request) {
+    this._validator.validateAlbumPayload(request.payload);
+
+    const { id } = request.params;
+    await this._service.editAlbumById(id, request.payload);
+
+    return {
+      status: 'success',
+      message: 'Album updated successfully',
+    };
+  }
 }
 
 module.exports = AlbumsHandler;

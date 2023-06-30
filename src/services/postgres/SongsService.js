@@ -59,11 +59,21 @@ class SongsService {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Failed to get song. Id not found');
     }
 
-    return result.rows.map(mapSongsDBToModel)[0];
+    return mapSongsDBToModel(result.rows[0]);
+  }
+
+  async getSongsByAlbumId(albumId) {
+    const query = {
+      text: 'SELECT * FROM songs WHERE album_id = $1',
+      values: [albumId],
+    };
+    const result = await this._pool.query(query);
+
+    return result.rows.map(mapSongsDBToModel);
   }
 
   async editSongById(id, {
@@ -75,7 +85,7 @@ class SongsService {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Failed to update song. Id not found');
     }
   }
@@ -87,7 +97,7 @@ class SongsService {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Failed to delete song. Id not found');
     }
   }

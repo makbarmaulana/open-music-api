@@ -1,6 +1,4 @@
 exports.up = (pgm) => {
-  /* eslint-disable camelcase */
-
   pgm.createTable('playlist_song_activities', {
     id: {
       type: 'VARCHAR(64)',
@@ -32,15 +30,10 @@ exports.up = (pgm) => {
   pgm.addConstraint(
     'playlist_song_activities',
     'fk_playlist_song_activities_playlist_id_playlists_id',
-    'FOREIGN KEY (playlist_id) REFERENCES playlists (id) ON DELETE CASCADE',
+    'FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE',
   );
 };
 
 exports.down = (pgm) => {
-  pgm.dropConstraint(
-    'playlist_song_activities',
-    'fk_playlist_song_activities_playlist_id_playlists_id',
-  );
-
   pgm.dropTable('playlist_song_activities');
 };

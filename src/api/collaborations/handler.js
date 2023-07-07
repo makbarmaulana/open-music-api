@@ -1,7 +1,9 @@
 const autoBind = require('auto-bind');
 
 class CollaborationsHandler {
-  constructor(collaborationsService, playlistsService, validator) {
+  constructor(service, validator) {
+    const { collaborationsService, playlistsService } = service;
+
     this._collaborationsService = collaborationsService;
     this._playlistsService = playlistsService;
     this._validator = validator;
@@ -21,12 +23,14 @@ class CollaborationsHandler {
       userId,
     );
 
-    const response = h.response({
-      status: 'success',
-      message: 'Kolaborasi berhasil ditambahkan',
-      data: { collaborationId },
-    });
-    response.code(201);
+    const response = h
+      .response({
+        status: 'success',
+        message: 'Collaboration successfully added.',
+        data: { collaborationId },
+      })
+      .code(201);
+
     return response;
   }
 
@@ -41,7 +45,7 @@ class CollaborationsHandler {
 
     return {
       status: 'success',
-      message: 'Kolaborasi berhasil dihapus',
+      message: 'Collaboration successfully deleted.',
     };
   }
 }

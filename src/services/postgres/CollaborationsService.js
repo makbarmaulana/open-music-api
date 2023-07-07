@@ -9,7 +9,7 @@ class CollaborationsService {
   }
 
   async addCollaboration(playlistId, userId) {
-    await this.findUserById(userId);
+    await this.verifyUserById(userId);
 
     const id = `collab-${nanoid(16)}`;
 
@@ -20,8 +20,8 @@ class CollaborationsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      throw new InvariantError('Kolaborasi gagal ditambahkan');
+    if (!result.rowCount) {
+      throw new InvariantError('Failed to add collaboration.');
     }
 
     return result.rows[0].id;
@@ -35,12 +35,12 @@ class CollaborationsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      throw new InvariantError('Kolaborasi gagal dihapus');
+    if (!result.rowCount) {
+      throw new InvariantError('Failed to delete collaboration.');
     }
   }
 
-  async findUserById(userId) {
+  async verifyUserById(userId) {
     const query = {
       text: 'SELECT * FROM users WHERE id = $1',
       values: [userId],
@@ -49,7 +49,7 @@ class CollaborationsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new NotFoundError('Failed to get user. Id not found');
+      throw new NotFoundError('User not found.');
     }
   }
 
@@ -61,8 +61,8 @@ class CollaborationsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      throw new InvariantError('Kolaborasi gagal diverifikasi');
+    if (!result.rowCount) {
+      throw new InvariantError('Failed to verify collaboration.');
     }
   }
 }

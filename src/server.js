@@ -50,14 +50,14 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
 
-  // registrasi plugin eksternal
+  // Register Eksternal Plugin
   await server.register([
     {
       plugin: Jwt,
     },
   ]);
 
-  // mendefinisikan strategy autentikasi jwt
+  // Define JWT Authentication Strategy
   server.auth.strategy('openmusicapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
@@ -120,8 +120,10 @@ const init = async () => {
     {
       plugin: collaborations,
       options: {
-        collaborationsService,
-        playlistsService,
+        service: {
+          collaborationsService,
+          playlistsService,
+        },
         validator: CollaborationsValidator,
       },
     },

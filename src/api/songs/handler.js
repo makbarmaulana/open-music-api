@@ -11,18 +11,28 @@ class SongsHandler {
   async postSongHandler(request, h) {
     this._validator.validateSongPayload(request.payload);
 
-    const songId = await this._service.addSong(request.payload);
-    const response = h.response({
-      status: 'success',
-      message: 'Song added successfully',
-      data: { songId },
-    }).code(201);
+    const {
+      title, year, performer, genre, duration, albumId,
+    } = request.payload;
+
+    const songId = await this._service.addSong({
+      title, year, performer, genre, duration, albumId,
+    });
+
+    const response = h
+      .response({
+        status: 'success',
+        message: 'Song successfully added.',
+        data: { songId },
+      })
+      .code(201);
 
     return response;
   }
 
   async getSongsHandler(request) {
     const { title, performer } = request.query;
+
     const songs = await this._service.getSongs({ title, performer });
 
     return {
@@ -33,6 +43,7 @@ class SongsHandler {
 
   async getSongByIdHandler(request) {
     const { id } = request.params;
+
     const song = await this._service.getSongById(id);
 
     return {
@@ -41,25 +52,33 @@ class SongsHandler {
     };
   }
 
-  async editSongByIdHandler(request) {
+  async updateSongByIdHandler(request) {
     this._validator.validateSongPayload(request.payload);
 
     const { id } = request.params;
-    await this._service.editSongById(id, request.payload);
+
+    const {
+      title, year, performer, genre, duration, albumId,
+    } = request.payload;
+
+    await this._service.updateSongById(id, {
+      title, year, performer, genre, duration, albumId,
+    });
 
     return {
       status: 'success',
-      message: 'Song updated successfully',
+      message: 'Song successfully updated.',
     };
   }
 
   async deleteSongByIdHandler(request) {
     const { id } = request.params;
+
     await this._service.deleteSongById(id);
 
     return {
       status: 'success',
-      message: 'Song deleted successfully',
+      message: 'Song successfully deleted.',
     };
   }
 }

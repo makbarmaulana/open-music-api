@@ -8,17 +8,20 @@ class AlbumsService {
     this._pool = new Pool();
   }
 
-  async addAlbum({ name, year }) {
+  async addAlbum(name, year) {
     const id = `album-${nanoid(16)}`;
+
     const query = {
       text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
       values: [id, name, year],
     };
+
     const result = await this._pool.query(query);
 
     if (!result.rows[0].id) {
-      throw new InvariantError('Failed to add album');
+      throw new InvariantError('Failed to create album. Missing required fields.');
     }
+
     return result.rows[0].id;
   }
 
@@ -27,24 +30,26 @@ class AlbumsService {
       text: 'SELECT * FROM albums WHERE id = $1',
       values: [id],
     };
+
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new NotFoundError('Album not found');
+      throw new NotFoundError(`Failed to get album. Album ID ${id} not found.`);
     }
 
     return result.rows[0];
   }
 
-  async editAlbumById(id, { name, year }) {
+  async updateAlbumById(id, { name, year }) {
     const query = {
       text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
       values: [name, year, id],
     };
+
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      throw new NotFoundError('Failed to update album. Id not found');
+    if (!result.rowCount) {
+      throw new NotFoundError(`Failed to update album. Album ID ${id} not found.`);
     }
   }
 
@@ -53,10 +58,11 @@ class AlbumsService {
       text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
       values: [id],
     };
+
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      throw new NotFoundError('Failed to delete album. Id not found');
+    if (!result.rowCount) {
+      throw new NotFoundError(`Failed to delete album. Album ID ${id} not found.`);
     }
   }
 }

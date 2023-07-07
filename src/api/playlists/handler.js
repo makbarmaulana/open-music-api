@@ -19,7 +19,7 @@ class PlaylistsHandler {
     const response = h
       .response({
         status: 'success',
-        message: 'Playlist berhasil ditambahkan',
+        message: 'Playlist successfully created.',
         data: { playlistId },
       })
       .code(201);
@@ -46,7 +46,7 @@ class PlaylistsHandler {
 
     return {
       status: 'success',
-      message: 'Playlist deleted successfully',
+      message: 'Playlist successfully deleted.',
     };
   }
 
@@ -63,10 +63,12 @@ class PlaylistsHandler {
       playlistId, songId, userId: owner, action: 'add',
     });
 
-    const response = h.response({
-      status: 'success',
-      message: 'Song added successfully',
-    }).code(201);
+    const response = h
+      .response({
+        status: 'success',
+        message: 'Song successfully added to playlist.',
+      })
+      .code(201);
 
     return response;
   }
@@ -99,7 +101,7 @@ class PlaylistsHandler {
 
     return {
       status: 'success',
-      message: 'Song deleted successfully',
+      message: 'Song successfully deleted.',
     };
   }
 

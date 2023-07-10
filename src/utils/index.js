@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
 
+const mapAlbumsDBToModel = ({ cover, ...album }) => ({
+  ...album,
+  coverUrl: cover,
+});
+
 const mapSongsDBToModel = ({ album_id, ...song }) => ({
   ...song,
   albumId: album_id,
@@ -22,6 +27,7 @@ const mapPlaylistActivitiesDBToModel = ({ ...activities }) => ({
 });
 
 module.exports = {
+  mapAlbumsDBToModel,
   mapSongsDBToModel,
   mapPlaylistsDBToModel,
   mapPlaylistSongsDBToModel,

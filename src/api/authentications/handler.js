@@ -22,14 +22,16 @@ class AuthenticationsHandler {
 
     await this._authenticationsService.addRefreshToken(refreshToken);
 
-    const response = h.response({
-      status: 'success',
-      message: 'Authentication added successfully',
-      data: {
-        accessToken,
-        refreshToken,
-      },
-    }).code(201);
+    const response = h
+      .response({
+        status: 'success',
+        message: 'Authentication added successfully',
+        data: {
+          accessToken,
+          refreshToken,
+        },
+      })
+      .code(201);
 
     return response;
   }

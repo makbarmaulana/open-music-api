@@ -4,6 +4,8 @@ const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 const path = require('path');
+const config = require('./utils/config');
+
 const ClientError = require('./exceptions/ClientError');
 
 const songs = require('./api/songs');
@@ -43,8 +45,8 @@ const CacheService = require('./services/redis/CacheService');
 
 const init = async () => {
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    host: config.app.host,
+    port: config.app.port,
     routes: {
       cors: {
         origin: ['*'],
@@ -52,9 +54,7 @@ const init = async () => {
     },
   });
 
-  /**
-   * * Register Plugin
-   */
+  // Register App Plugin
   const cacheService = new CacheService();
   const collaborationsService = new CollaborationsService(cacheService);
   const playlistsService = new PlaylistsService(collaborationsService, cacheService);
@@ -166,21 +166,19 @@ const init = async () => {
     },
   ]);
 
-  /**
-   * * Error Handling
-   */
-  server.ext('onPreResponse', (request, h) => {
+  // Error Handling
+  const handlePreResponse = (request, h) => {
     const { response } = request;
 
     if (response instanceof Error) {
       // Client ERROR!
       if (response instanceof ClientError) {
-        const newResponse = h.response({
-          status: 'fail',
-          message: response.message,
-        });
-        newResponse.code(response.statusCode);
-        return newResponse;
+        return h
+          .response({
+            status: 'fail',
+            message: response.message,
+          })
+          .code(response.statusCode);
       }
 
       // Continue processing if the error is not from the server
@@ -189,17 +187,19 @@ const init = async () => {
       }
 
       // Server ERROR!
-      const newResponse = h.response({
-        status: 'error',
-        message: 'An internal server error occurred.',
-      });
-      newResponse.code(500);
-      return newResponse;
+      return h
+        .response({
+          status: 'error',
+          message: 'An internal server error occurred.',
+        })
+        .code(500);
     }
 
     // Continue processing if the response is not an error
     return h.continue;
-  });
+  };
+
+  server.ext('onPreResponse', handlePreResponse);
 
   await server.start();
   console.log(`Server running on ${server.info.uri}`);

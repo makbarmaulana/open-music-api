@@ -1,4 +1,5 @@
 const autoBind = require('auto-bind');
+const config = require('../../utils/config');
 
 class UploadsHandler {
   constructor(service, validator) {
@@ -22,7 +23,7 @@ class UploadsHandler {
 
     // Save album cover file to storage and create the file location URL
     const filename = await this._storageService.writeFile(cover, cover.hapi);
-    const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/uploads/images/${filename}`;
+    const fileLocation = `http://${config.app.host}:${config.app.port}/uploads/images/${filename}`;
 
     // Remove old album cover file in the storage if it exists
     const oldCover = album.coverUrl;

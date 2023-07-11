@@ -70,6 +70,45 @@ class AlbumsHandler {
       message: 'Album successfully deleted.',
     };
   }
+
+  async likeAlbumHandler(request, h) {
+    const { id: userId } = request.auth.credentials;
+    const { id: albumId } = request.params;
+
+    await this._albumsService.likeAlbum(userId, albumId);
+
+    const response = h
+      .response({
+        status: 'success',
+        message: 'Album successfully liked.',
+      })
+      .code(201);
+
+    return response;
+  }
+
+  async getAlbumLikesCountHandler(request) {
+    const { id: albumId } = request.params;
+
+    const likes = await this._albumsService.getAlbumLikesCount(albumId);
+
+    return {
+      status: 'success',
+      data: { likes },
+    };
+  }
+
+  async unlikeAlbumHandler(request) {
+    const { id: userId } = request.auth.credentials;
+    const { id: albumId } = request.params;
+
+    await this._albumsService.unlikeAlbum(userId, albumId);
+
+    return {
+      status: 'success',
+      message: 'Album successfully unliked.',
+    };
+  }
 }
 
 module.exports = AlbumsHandler;

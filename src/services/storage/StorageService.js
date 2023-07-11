@@ -21,6 +21,21 @@ class StorageService {
       file.on('end', () => resolve(filename));
     });
   }
+
+  deleteFile(fileUrl) {
+    const filename = fileUrl.split('/').pop();
+    const path = `${this._folder}/${filename}`;
+
+    return new Promise((resolve, reject) => {
+      fs.unlink(path, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
 }
 
 module.exports = StorageService;

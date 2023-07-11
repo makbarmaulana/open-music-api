@@ -1,4 +1,5 @@
 node_modules
+src/api/uploads/file
 .env
 .prod.env
 .vscode

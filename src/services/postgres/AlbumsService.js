@@ -1,11 +1,13 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
+const { mapAlbumsDBToModel } = require('../../utils');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class AlbumsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addAlbum(name, year) {
@@ -37,7 +39,7 @@ class AlbumsService {
       throw new NotFoundError(`Failed to get album. Album ID ${id} not found.`);
     }
 
-    return result.rows[0];
+    return mapAlbumsDBToModel(result.rows[0]);
   }
 
   async updateAlbumById(id, { name, year }) {
@@ -53,6 +55,19 @@ class AlbumsService {
     }
   }
 
+  async updateAlbumCover(id, cover) {
+    const query = {
+      text: 'UPDATE albums SET cover = $1 WHERE id = $2 RETURNING id',
+      values: [cover, id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError(`Failed to set cover album. Album ID ${id} not found.`);
+    }
+  }
+
   async deleteAlbumById(id) {
     const query = {
       text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
@@ -63,6 +78,75 @@ class AlbumsService {
 
     if (!result.rowCount) {
       throw new NotFoundError(`Failed to delete album. Album ID ${id} not found.`);
+    }
+  }
+
+  async getAlbumLikesCount(albumId) {
+    try {
+      const result = await this._cacheService.get(`album_likes:${albumId}`);
+      const likes = Number(result);
+
+      return { likes, isFromCache: true };
+    } catch (error) {
+      const query = {
+        text: 'SELECT COUNT(*) FROM user_album_likes WHERE album_id = $1',
+        values: [albumId],
+      };
+
+      const result = await this._pool.query(query);
+      const likes = Number(result.rows[0].count);
+
+      await this._cacheService.set(`album_likes:${albumId}`, likes);
+
+      return { likes, isFromCache: false };
+    }
+  }
+
+  async likeAlbum(userId, albumId) {
+    await this.getAlbumById(albumId);
+    await this.verifyAlbumIsLiked(userId, albumId);
+
+    const id = `like-${nanoid(16)}`;
+
+    const query = {
+      text: 'INSERT INTO user_album_likes VALUES($1, $2, $3) RETURNING id',
+      values: [id, userId, albumId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Failed to like album.');
+    }
+
+    await this._cacheService.delete(`album_likes:${albumId}`);
+  }
+
+  async unlikeAlbum(userId, albumId) {
+    const query = {
+      text: 'DELETE FROM user_album_likes WHERE user_id = $1 AND album_id = $2 RETURNING id',
+      values: [userId, albumId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new InvariantError('Failed to unlike.');
+    }
+
+    await this._cacheService.delete(`album_likes:${albumId}`);
+  }
+
+  async verifyAlbumIsLiked(userId, albumId) {
+    const query = {
+      text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
+      values: [userId, albumId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (result.rowCount > 0) {
+      throw new InvariantError('Album is already liked.');
     }
   }
 }
